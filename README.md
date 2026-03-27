@@ -81,10 +81,3 @@ Author: Chương - Product Builder Applicant
 
 ---
 
-### 🏁 Chốt hạ để nộp bài
-1. Dán nội dung trên vào file `README.md`.
-2. Chạy lệnh đẩy lên GitHub:
-   ```bash
-   git add README.md
-   git commit -m "docs: finalize clean readme documentation"
-   git push origin main
