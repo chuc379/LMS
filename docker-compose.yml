@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 1. Database: PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: lms_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: mini_lms
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d mini_lms"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Backend: FastAPI (Nằm trong thư mục mini_lms)
+  backend:
+    build: ./mini_lms
+    container_name: lms_backend
+    volumes:
+      - ./mini_lms:/app
+    ports:
+      - "5001:5001"
+    environment:
+      # Sử dụng tên service 'db' để kết nối trong mạng nội bộ Docker
+      DATABASE_URL: postgresql://admin:password123@db:5432/mini_lms
+      PYTHONPATH: /app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 3. Frontend: Next.js (Nằm trong thư mục FE)
+  frontend:
+    build: ./FE
+    container_name: lms_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Lưu ý: Client-side cần gọi đến localhost nếu chạy trên browser của bạn
+      NEXT_PUBLIC_API_URL: http://localhost:5001/api
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
